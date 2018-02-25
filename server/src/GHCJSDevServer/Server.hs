@@ -11,7 +11,7 @@ import           Network.Wai.Application.Static (StaticSettings (..),
                                                  staticApp)
 import           Network.Wai.Handler.Warp       (run)
 import           System.FilePath                ((</>))
-import           WaiAppStatic.Types             (MaxAge (..))
+import           WaiAppStatic.Types             (MaxAge (..), unsafeToPiece)
 
 ghcjsServer :: Options -> Application
 ghcjsServer = static
@@ -23,4 +23,4 @@ static :: Options -> Application
 static options =
   staticApp
     ((defaultWebAppSettings (_output options </> "app.jsexe"))
-     {ssMaxAge = NoMaxAge})
+     {ssMaxAge = NoMaxAge, ssIndices = [unsafeToPiece "index.html"]})
