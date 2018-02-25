@@ -1,6 +1,6 @@
 { mkDerivation, base, bytestring, directory, filepath, fsnotify
-, http-types, lucid, optparse-applicative, process, stdenv, stm
-, wai, wai-app-static, warp, websockets
+, optparse-applicative, process, stdenv, stm, wai, wai-app-static
+, warp, websockets
 }:
 mkDerivation {
   pname = "ghcjs-dev-server";
@@ -9,8 +9,8 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    base bytestring directory filepath fsnotify http-types lucid
-    optparse-applicative process stm wai wai-app-static warp websockets
+    base bytestring directory filepath fsnotify optparse-applicative
+    process stm wai wai-app-static warp websockets
   ];
   license = stdenv.lib.licenses.bsd3;
 }

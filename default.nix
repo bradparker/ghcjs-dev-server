@@ -7,5 +7,7 @@ let
   haskellPackages = if compiler == "default"
     then nixpkgs.haskellPackages
     else nixpkgs.haskell.packages.${compiler};
+  server = haskellPackages.callPackage ./server/package.nix { };
+  client = haskell.packages.ghcjs.callPackage ./client/package.nix { };
 in
-  haskellPackages.callPackage ./ghcjs-dev-server.nix { }
+  { inherit client server; }

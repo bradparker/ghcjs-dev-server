@@ -20,11 +20,12 @@ data ServerOptions = ServerOptions
   } deriving (Show)
 
 data Options = Options
-  { _source  :: String
-  , _output  :: String
-  , _main    :: String
-  , _watcher :: WatcherOptions
-  , _server  :: ServerOptions
+  { _source    :: String
+  , _output    :: String
+  , _ghcjsOpts :: String
+  , _main      :: String
+  , _watcher   :: WatcherOptions
+  , _server    :: ServerOptions
   } deriving (Show)
 
 optionsParser :: Parser Options
@@ -38,6 +39,10 @@ optionsParser =
      str
      (value "dev-build" <> short 'o' <> long "output" <> help "Build directory" <>
       metavar "BUILD DIRECTORY")) <*>
+  (option
+     str
+     (value "" <> long "ghcjs-opts" <> help "Extra GHCJS flags" <>
+      metavar "GHCJS FLAGS")) <*>
   (option
      str
      (value "Main.hs" <> short 'm' <> long "main-is" <> help "Main file." <>

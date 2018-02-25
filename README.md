@@ -1,6 +1,6 @@
 # GHCJS Dev Server
 
-*N.B.* This is an experiment. There is a lot of work to do.
+*N.B.* This is an experiment. There is a lot of work to do and a lot of questions to answer :)
 
 At the momement it just does a couple of things:
 
@@ -11,7 +11,10 @@ At the momement it just does a couple of things:
 
 ```
 $ nix-shell
-$ cabal run -- --source sample-app/src --output sample-app/dev-build
+$ cd server
+$ cabal configure && cabal build
+$ cd ../sample-app
+$ ../server/dist/build/ghcjs-dev-server/ghcjs-dev-server --ghcjs-opts '-i../client/src'
 ```
 
-You should now have the sample app available at http://localhost:8080. If you edit a Haskell file in the `sample-app/src` directory then the browser should reload with your new code.
+You should now have the sample app available at http://localhost:8080/index.html. If you edit a Haskell file in the `sample-app/src` directory then the browser should reload with your new code.

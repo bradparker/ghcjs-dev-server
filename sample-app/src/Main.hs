@@ -2,8 +2,9 @@ module Main
   ( main
   ) where
 
-import           Data.Monoid ((<>))
-import           SomeModule  (who)
+import           Data.Monoid           ((<>))
+import           GHCJSDevServer.Client (runGHCJSDevServerClient)
+import           SomeModule            (who)
 
 main :: IO ()
-main = putStrLn ("Hello, " <> who <> "!!!")
+main = runGHCJSDevServerClient *> putStrLn ("Hello, " <> who <> "!")

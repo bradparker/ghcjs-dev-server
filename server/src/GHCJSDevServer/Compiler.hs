@@ -12,7 +12,7 @@ import           System.FilePath        ((</>))
 import           System.Process         (readProcessWithExitCode)
 
 args :: Options -> [String]
-args Options {_source, _output, _main} =
+args Options {_source, _output, _main, _ghcjsOpts} =
   [ ("-i" <> _source)
   , "-o"
   , _output </> "app"
@@ -21,7 +21,8 @@ args Options {_source, _output, _main} =
   , "-odir"
   , _output
   , (_source </> _main)
-  ]
+  ] ++
+  (words _ghcjsOpts)
 
 runGHCJSCompiler :: Options -> IO (Either String String)
 runGHCJSCompiler options = do

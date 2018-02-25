@@ -7,11 +7,17 @@ let
   haskellPackages = if compiler == "default"
     then nixpkgs.haskellPackages
     else nixpkgs.pkgs.haskell.packages.${compiler};
-  env = (import ./default.nix { inherit nixpkgs compiler; }).env;
   hlint = haskellPackages.hlint;
   cabal = haskellPackages.cabal-install;
-  ghcjs = haskell.compiler.ghcjs;
+
+  default = (import ./default.nix { inherit nixpkgs compiler; });
+  serverEnvAttrs = default.server.env.drvAttrs;
+  clientEnvAttrs = default.client.env.drvAttrs;
+
+  merged = serverEnvAttrs // {
+    name = "ghcjs-dev-env";
+    nativeBuildInputs = serverEnvAttrs.nativeBuildInputs ++ clientEnvAttrs.nativeBuildInputs;
+    shellHook = serverEnvAttrs.shellHook + clientEnvAttrs.shellHook;
+  };
 in
-  nixpkgs.lib.overrideDerivation env (drv: {
-    nativeBuildInputs = drv.nativeBuildInputs ++ [ hlint cabal ghcjs ];
-  })
+  nixpkgs.stdenv.mkDerivation merged
