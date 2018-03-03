@@ -23,7 +23,8 @@ executable ghcjs-dev-server
     directory,
     process,
     stm,
-    websockets
+    websockets,
+    ansi-terminal
   hs-source-dirs:
     src
   default-language:
