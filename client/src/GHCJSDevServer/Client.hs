@@ -4,12 +4,17 @@ module GHCJSDevServer.Client
   ( runGHCJSDevServerClient
   ) where
 
-import           Data.JSString          (JSString, unpack)
-import           Data.Monoid            ((<>))
-import           GHCJS.Foreign.Callback (Callback, asyncCallback,
-                                         asyncCallback1)
-import           GHCJS.Marshal          (toJSVal)
-import           GHCJS.Types            (JSVal)
+import           Control.Monad              (join)
+import           Data.Aeson                 (eitherDecode)
+import           Data.ByteString.Lazy       (ByteString)
+import           Data.ByteString.Lazy.Char8 (pack)
+import           Data.JSString              (JSString, unpack)
+import qualified Data.JSString              as JString
+import           Data.Monoid                ((<>))
+import           GHCJS.Foreign.Callback     (Callback, asyncCallback,
+                                             asyncCallback1)
+import           GHCJS.Marshal              (toJSVal)
+import           GHCJS.Types                (JSVal)
 
 newtype WebSocket =
   WebSocket JSVal
@@ -39,14 +44,24 @@ foreign import javascript unsafe "location.reload(true)" reload ::
 newtype Message =
   Message JSVal
 
-runGHCJSDevServerClient :: IO ()
-runGHCJSDevServerClient = do
-  socket <- createWebSocket "ws://localhost:8081" []
+decodeMessageData :: JSString -> Either String String
+decodeMessageData = join . eitherDecode . pack . unpack
+
+putPrefixed :: String -> String -> IO ()
+putPrefixed prefix = putStrLn . (prefix ++)
+
+putGHCJSDS :: String -> IO ()
+putGHCJSDS = mapM_ (putPrefixed "[GHCJSDS] ") . lines
+
+runGHCJSDevServerClient :: Int -> IO ()
+runGHCJSDevServerClient port = do
+  socket <- createWebSocket ("ws://localhost:" <> JString.pack (show port)) []
   onOpen socket =<< asyncCallback (putStrLn "[GHCJSDS] Connected")
   onClose socket =<< asyncCallback (putStrLn "[GHCJSDS] Disconnected")
   onMessage socket =<<
     asyncCallback1
       (\message -> do
-         d <- getData (Message message)
-         putStrLn (unpack ("[GHCJSDS] Message " <> d))
-         reload)
+         result <- decodeMessageData <$> getData (Message message)
+         case result of
+           Left err     -> putGHCJSDS ("ERROR:" ++ err)
+           Right report -> putGHCJSDS ("SUCCESS:\n" ++ report) *> reload)

@@ -1,4 +1,4 @@
-{ mkDerivation, ansi-terminal, base, bytestring, directory
+{ mkDerivation, aeson, ansi-terminal, base, bytestring, directory
 , filepath, fsnotify, optparse-applicative, process, stdenv, stm
 , wai, wai-app-static, warp, websockets
 }:
@@ -9,7 +9,7 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    ansi-terminal base bytestring directory filepath fsnotify
+    aeson ansi-terminal base bytestring directory filepath fsnotify
     optparse-applicative process stm wai wai-app-static warp websockets
   ];
   license = stdenv.lib.licenses.bsd3;

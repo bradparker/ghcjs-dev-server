@@ -13,18 +13,19 @@ executable ghcjs-dev-server
     Main.hs
   build-depends:
     base >=4.9 && <4.10,
+    aeson,
+    ansi-terminal,
+    bytestring,
+    directory,
+    filepath,
     fsnotify,
+    optparse-applicative,
+    process,
+    stm,
     wai,
     wai-app-static,
     warp,
-    optparse-applicative,
-    filepath,
-    bytestring,
-    directory,
-    process,
-    stm,
-    websockets,
-    ansi-terminal
+    websockets
   hs-source-dirs:
     src
   default-language:

@@ -7,4 +7,4 @@ import           GHCJSDevServer.Client (runGHCJSDevServerClient)
 import           SomeModule            (who)
 
 main :: IO ()
-main = runGHCJSDevServerClient *> putStrLn ("Hello, " <> who <> "!")
+main = runGHCJSDevServerClient 8081 *> putStrLn ("Hello, " <> who <> "!")

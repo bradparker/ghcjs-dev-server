@@ -4,14 +4,16 @@ module GHCJSDevServer.Notifier
 
 import           Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
 import           Control.Monad          (forever)
+import           Data.Aeson             (encode)
 import           Data.ByteString        (ByteString)
 import           Data.ByteString.Char8  (pack)
-import           GHCJSDevServer.Options (Options (..))
+import           GHCJSDevServer.Options (NotifierOptions (..), Options (..))
 import           Network.WebSockets     (ServerApp, acceptRequest, runServer,
                                          sendTextData)
 
 runGHCJSNotifier :: TChan (Either String String) -> Options -> IO ()
-runGHCJSNotifier bchan options = runServer "0.0.0.0" 8081 (app bchan)
+runGHCJSNotifier bchan options =
+  runServer "0.0.0.0" (_notifierPort (_notifier options)) (app bchan)
 
 app :: TChan (Either String String) -> ServerApp
 app bchan conn = do
@@ -19,4 +21,4 @@ app bchan conn = do
   chan <- atomically (dupTChan bchan)
   forever $ do
     message <- atomically (readTChan chan)
-    sendTextData accepted (pack (show message))
+    sendTextData accepted (encode message)
