@@ -4,48 +4,39 @@ module GHCJSDevServer.Client
   ( runGHCJSDevServerClient
   ) where
 
-import           Control.Monad              (join)
-import           Data.Aeson                 (eitherDecode)
-import           Data.ByteString.Lazy       (ByteString)
-import           Data.ByteString.Lazy.Char8 (pack)
-import           Data.JSString              (JSString, unpack)
-import qualified Data.JSString              as JString
-import           Data.Monoid                ((<>))
-import           GHCJS.Foreign.Callback     (Callback, asyncCallback,
-                                             asyncCallback1)
-import           GHCJS.Marshal              (toJSVal)
-import           GHCJS.Types                (JSVal)
+import           Control.Monad               (join, void)
+import           Data.Aeson                  (eitherDecode)
+import           Data.ByteString.Lazy        (ByteString)
+import qualified Data.ByteString.Lazy.Char8  as ByteString
+import           Data.Char                   (isAscii)
+import           Data.JSString               (JSString)
+import qualified Data.JSString               as JSString
+import           Data.Monoid                 ((<>))
+import           GHCJS.Types                 (JSVal)
+import           JavaScript.Web.CloseEvent   (CloseEvent)
+import           JavaScript.Web.Location     (getWindowLocation, reload)
+import           JavaScript.Web.MessageEvent (MessageEvent,
+                                              MessageEventData (..), getData)
+import           JavaScript.Web.WebSocket    (WebSocket, WebSocketRequest (..),
+                                              connect)
 
-newtype WebSocket =
-  WebSocket JSVal
+newtype HTMLElement =
+  HTMLElement JSVal
 
-foreign import javascript unsafe "$r = new WebSocket($1, $2);"
-               js_createWebSocket :: JSString -> JSVal -> IO WebSocket
+foreign import javascript unsafe "$r = document.body" getBody ::
+               IO HTMLElement
 
-createWebSocket :: JSString -> [JSString] -> IO WebSocket
-createWebSocket url protocols = js_createWebSocket url =<< toJSVal protocols
+foreign import javascript unsafe "$2.innerHTML = $1; $r = $2"
+               setInnerHTML :: JSString -> HTMLElement -> IO HTMLElement
 
-foreign import javascript unsafe "$1.addEventListener('open', $2)"
-               onOpen :: WebSocket -> Callback (IO ()) -> IO ()
+foreign import javascript unsafe "$2.appendChild($1); $r = $2"
+               appendChild :: HTMLElement -> HTMLElement -> IO HTMLElement
 
-foreign import javascript unsafe "$1.addEventListener('close', $2)"
-               onClose :: WebSocket -> Callback (IO ()) -> IO ()
-
-foreign import javascript unsafe
-               "$1.addEventListener('message', $2)" onMessage ::
-               WebSocket -> Callback (JSVal -> IO ()) -> IO ()
-
-foreign import javascript unsafe "$1.data" getData ::
-               Message -> IO JSString
-
-foreign import javascript unsafe "location.reload(true)" reload ::
-               IO ()
-
-newtype Message =
-  Message JSVal
+foreign import javascript unsafe "document.createElement($1)"
+               createElement :: JSString -> IO HTMLElement
 
 decodeMessageData :: JSString -> Either String String
-decodeMessageData = join . eitherDecode . pack . unpack
+decodeMessageData = join . eitherDecode . ByteString.pack . JSString.unpack
 
 putPrefixed :: String -> String -> IO ()
 putPrefixed prefix = putStrLn . (prefix ++)
@@ -53,15 +44,34 @@ putPrefixed prefix = putStrLn . (prefix ++)
 putGHCJSDS :: String -> IO ()
 putGHCJSDS = mapM_ (putPrefixed "[GHCJSDS] ") . lines
 
+handleMessage :: MessageEvent -> IO ()
+handleMessage event =
+  case getData event of
+    StringData d ->
+      case decodeMessageData d of
+        Left err -> do
+          putGHCJSDS ("ERROR:\n" ++ sanitized)
+          body <- setInnerHTML "" =<< getBody
+          preElem <-
+            setInnerHTML (JSString.pack sanitized) =<< createElement "pre"
+          void $ appendChild preElem body
+          where sanitized = tail (filter isAscii err)
+        Right report ->
+          putGHCJSDS ("SUCCESS:\n" ++ report) *>
+          (reload True =<< getWindowLocation)
+    _ -> putGHCJSDS "UNKOWN MESSAGE FORMAT"
+
+handleClose :: CloseEvent -> IO ()
+handleClose _ = putGHCJSDS "Disconnected"
+
 runGHCJSDevServerClient :: Int -> IO ()
 runGHCJSDevServerClient port = do
-  socket <- createWebSocket ("ws://localhost:" <> JString.pack (show port)) []
-  onOpen socket =<< asyncCallback (putStrLn "[GHCJSDS] Connected")
-  onClose socket =<< asyncCallback (putStrLn "[GHCJSDS] Disconnected")
-  onMessage socket =<<
-    asyncCallback1
-      (\message -> do
-         result <- decodeMessageData <$> getData (Message message)
-         case result of
-           Left err     -> putGHCJSDS ("ERROR:" ++ err)
-           Right report -> putGHCJSDS ("SUCCESS:\n" ++ report) *> reload)
+  socket <-
+    connect
+      WebSocketRequest
+      { url = "ws://localhost:" <> JSString.pack (show port)
+      , protocols = []
+      , onClose = Just handleClose
+      , onMessage = Just handleMessage
+      }
+  putGHCJSDS "Waiting for changes ..."
