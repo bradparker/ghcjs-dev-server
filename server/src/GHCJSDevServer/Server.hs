@@ -1,3 +1,5 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module GHCJSDevServer.Server
   ( ghcjsServer
   , runGHCJSServer
@@ -10,7 +12,7 @@ import           Network.Wai.Application.Static (StaticSettings (..),
                                                  defaultWebAppSettings,
                                                  staticApp)
 import           Network.Wai.Handler.Warp       (run)
-import           System.FilePath                ((</>))
+import           System.FilePath                ((<.>), (</>))
 import           WaiAppStatic.Types             (MaxAge (..), unsafeToPiece)
 
 ghcjsServer :: Options -> Application
@@ -20,7 +22,7 @@ runGHCJSServer :: Options -> IO ()
 runGHCJSServer options = run (_port (_server options)) (ghcjsServer options)
 
 static :: Options -> Application
-static options =
+static Options {_buildDir, _name, _execName} =
   staticApp
-    ((defaultWebAppSettings (_output options </> "app.jsexe"))
+    ((defaultWebAppSettings (_buildDir </> _name </> _execName <.> "jsexe"))
      {ssMaxAge = NoMaxAge, ssIndices = [unsafeToPiece "index.html"]})

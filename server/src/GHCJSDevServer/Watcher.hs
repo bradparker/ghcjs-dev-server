@@ -6,7 +6,7 @@ import           Control.Concurrent      (threadDelay)
 import           Control.Concurrent.STM  (TChan, atomically, writeTChan)
 import           Control.Monad           (forever, void)
 import           GHCJSDevServer.Compiler (runGHCJSCompiler)
-import           GHCJSDevServer.Options  (Options (..))
+import           GHCJSDevServer.Options  (Options (..), WatcherOptions (..))
 import           System.FSNotify         (Event (..), watchDir, withManager)
 
 runGHCJSWatcher :: TChan (Either String String) -> Options -> IO ()
@@ -17,7 +17,7 @@ runGHCJSWatcher bchan options = do
        void
          (watchDir
             manager
-            (_source options)
+            (_directory (_watcher options))
             shouldRecompile
             (const (runCompilation bchan options)))
        forever (threadDelay maxBound))

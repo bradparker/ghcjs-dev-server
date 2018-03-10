@@ -6,14 +6,16 @@ module GHCJSDevServer.Options
   , getOptions
   ) where
 
-import           Data.Monoid         ((<>))
-import           Options.Applicative (Parser, auto, customExecParser,
-                                      execParser, fullDesc, header, help,
-                                      helper, info, long, metavar, option,
-                                      prefs, short, showHelpOnError, str, value)
+import           Data.Monoid           ((<>))
+import           Options.Applicative   (Parser, auto, customExecParser,
+                                        fullDesc, header, help, helper, info,
+                                        long, metavar, option, prefs, short,
+                                        showHelpOnError, str, value)
+import           System.Directory      (getCurrentDirectory)
+import           System.FilePath.Posix (takeBaseName)
 
 newtype WatcherOptions = WatcherOptions
-  { _pattern :: String
+  { _directory :: String
   } deriving (Show)
 
 newtype ServerOptions = ServerOptions
@@ -25,39 +27,50 @@ newtype NotifierOptions = NotifierOptions
   } deriving (Show)
 
 data Options = Options
-  { _source    :: String
-  , _output    :: String
-  , _ghcjsOpts :: String
-  , _main      :: String
-  , _watcher   :: WatcherOptions
-  , _server    :: ServerOptions
-  , _notifier  :: NotifierOptions
+  { _name        :: String
+  , _execName    :: String
+  , _sourceDirs  :: [String]
+  , _buildDir    :: String
+  , _defaultExts :: [String]
+  , _watcher     :: WatcherOptions
+  , _server      :: ServerOptions
+  , _notifier    :: NotifierOptions
   } deriving (Show)
 
-optionsParser :: Parser Options
-optionsParser =
+optionsParser :: String -> String -> Parser Options
+optionsParser defaultName defaultBuildDir =
   Options <$>
   option
     str
-    (value "src" <> short 'i' <> long "source" <> help "Source directory" <>
-     metavar "SOURCE DIRECTORY") <*>
+    (value defaultName <> short 'n' <> long "name" <>
+     help "Name as it appears in .cabal file" <>
+     metavar "NAME") <*>
   option
     str
-    (value "dev-build" <> short 'o' <> long "output" <> help "Build directory" <>
-     metavar "BUILD DIRECTORY") <*>
+    (value defaultName <> short 'e' <> long "executable-name" <>
+     help "Executable name as it appears in .cabal file" <>
+     metavar "EXECUTABLE_NAME") <*>
+  option
+    auto
+    (value ["src"] <> short 's' <> long "source-dirs" <>
+     help "Source directories" <>
+     metavar "SOURCE_DIRECTORIES") <*>
   option
     str
-    (value "" <> long "ghcjs-opts" <> help "Extra GHCJS flags" <>
-     metavar "GHCJS FLAGS") <*>
+    (value defaultBuildDir <> short 'b' <> long "build-dir" <>
+     help
+       "The build dir, where the work is done and static files are served from" <>
+     metavar "BUILD_DIR") <*>
   option
-    str
-    (value "Main.hs" <> short 'm' <> long "main-is" <> help "Main file." <>
-     metavar "MAIN") <*>
+    auto
+    (value ["OverloadedStrings"] <> short 'x' <> long "default-extensions" <>
+     help "Default GHC extensions" <>
+     metavar "DEFAULT_EXTENSIONS") <*>
   (WatcherOptions <$>
    option
      str
-     (value "**/*.hs" <> short 'w' <> long "watch" <>
-      help "A glob pattern for the files we'll watch to trigger re-compilation" <>
+     (value "src" <> short 'w' <> long "watch" <>
+      help "The directory to watch for file changes" <>
       metavar "WATCH")) <*>
   (ServerOptions <$>
    option
@@ -72,10 +85,11 @@ optionsParser =
       help "A port for the websocket server to listen on" <>
       metavar "NOTIFIER_PORT"))
 
-getOptions :: IO Options
-getOptions =
+getOptions :: String -> IO Options
+getOptions defaultBuildDir = do
+  defaultName <- takeBaseName <$> getCurrentDirectory
   customExecParser
     (prefs showHelpOnError)
     (info
-       (helper <*> optionsParser)
+       (helper <*> optionsParser defaultName defaultBuildDir)
        (header "GHCJS Dev Server - Let's go!" <> fullDesc))

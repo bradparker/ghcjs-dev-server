@@ -22,6 +22,7 @@ executable ghcjs-dev-server
     optparse-applicative,
     process,
     stm,
+    temporary,
     wai,
     wai-app-static,
     warp,
