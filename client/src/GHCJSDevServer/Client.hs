@@ -29,7 +29,7 @@ foreign import javascript unsafe "$r = document.body" getBody ::
 foreign import javascript unsafe "$2.innerHTML = $1; $r = $2"
                setInnerHTML :: JSString -> HTMLElement -> IO HTMLElement
 
-foreign import javascript unsafe "$2.appendChild($1); $r = $2"
+foreign import javascript unsafe "$1.appendChild($2); $r = $1"
                appendChild :: HTMLElement -> HTMLElement -> IO HTMLElement
 
 foreign import javascript unsafe "document.createElement($1)"
@@ -44,21 +44,22 @@ putPrefixed prefix = putStrLn . (prefix ++)
 putGHCJSDS :: String -> IO ()
 putGHCJSDS = mapM_ (putPrefixed "[GHCJSDS] ") . lines
 
+errorReport :: String -> IO HTMLElement
+errorReport content =
+  setInnerHTML (JSString.pack content) =<< createElement "pre"
+
 handleMessage :: MessageEvent -> IO ()
 handleMessage event =
   case getData event of
     StringData d ->
       case decodeMessageData d of
         Left err -> do
-          putGHCJSDS ("ERROR:\n" ++ sanitized)
+          putGHCJSDS ("ERROR:\n" ++ tail err)
           body <- setInnerHTML "" =<< getBody
-          preElem <-
-            setInnerHTML (JSString.pack sanitized) =<< createElement "pre"
-          void $ appendChild preElem body
-          where sanitized = tail (filter isAscii err)
-        Right report ->
-          putGHCJSDS ("SUCCESS:\n" ++ report) *>
-          (reload True =<< getWindowLocation)
+          void (appendChild body =<< errorReport (tail err))
+        Right report -> do
+          putGHCJSDS ("SUCCESS:\n" ++ report)
+          reload True =<< getWindowLocation
     _ -> putGHCJSDS "UNKOWN MESSAGE FORMAT"
 
 handleClose :: CloseEvent -> IO ()
