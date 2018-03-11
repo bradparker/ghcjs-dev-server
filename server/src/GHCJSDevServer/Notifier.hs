@@ -5,8 +5,8 @@ module GHCJSDevServer.Notifier
 import           Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
 import           Control.Monad          (forever)
 import           Data.Aeson             (encode)
-import           Data.ByteString        (ByteString)
-import           Data.ByteString.Char8  (pack)
+import           Data.Bifunctor         (bimap)
+import           Data.Char              (isAscii)
 import           GHCJSDevServer.Options (NotifierOptions (..), Options (..))
 import           Network.WebSockets     (ServerApp, acceptRequest, runServer,
                                          sendTextData)
@@ -21,4 +21,6 @@ app bchan conn = do
   chan <- atomically (dupTChan bchan)
   forever $ do
     message <- atomically (readTChan chan)
-    sendTextData accepted (encode message)
+    sendTextData accepted (encode (bimap asciiOnly asciiOnly message))
+  where
+    asciiOnly = filter isAscii
