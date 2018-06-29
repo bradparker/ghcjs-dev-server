@@ -2,14 +2,13 @@ module GHCJSDevServer.Notifier
   ( runGHCJSNotifier
   ) where
 
-import           Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
-import           Control.Monad          (forever)
-import           Data.Aeson             (encode)
-import           Data.Bifunctor         (bimap)
-import           Data.Char              (isAscii)
-import           GHCJSDevServer.Options (NotifierOptions (..), Options (..))
-import           Network.WebSockets     (ServerApp, acceptRequest, runServer,
-                                         sendTextData)
+import Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
+import Control.Monad (forever)
+import Data.Aeson (encode)
+import Data.Bifunctor (bimap)
+import Data.Char (isAscii)
+import GHCJSDevServer.Options (NotifierOptions(..), Options(..))
+import Network.WebSockets (ServerApp, acceptRequest, runServer, sendTextData)
 
 runGHCJSNotifier :: TChan (Either String String) -> Options -> IO ()
 runGHCJSNotifier bchan options =

@@ -2,14 +2,18 @@ module GHCJSDevServer.Logger
   ( runGHCJSLogger
   ) where
 
-import           Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
-import           Control.Monad          (forever)
-import           GHCJSDevServer.Options (Options (..), ServerOptions (..))
-import           System.Console.ANSI    (Color (Blue, Green, Red, White),
-                                         ColorIntensity (Dull, Vivid),
-                                         ConsoleLayer (Background, Foreground),
-                                         SGR (Reset, SetColor), clearScreen,
-                                         setCursorPosition, setSGR)
+import Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
+import Control.Monad (forever)
+import GHCJSDevServer.Options (Options(..), ServerOptions(..))
+import System.Console.ANSI
+  ( Color(Blue, Green, Red, White)
+  , ColorIntensity(Dull, Vivid)
+  , ConsoleLayer(Background, Foreground)
+  , SGR(Reset, SetColor)
+  , clearScreen
+  , setCursorPosition
+  , setSGR
+  )
 
 runGHCJSLogger :: Options -> TChan (Either String String) -> IO ()
 runGHCJSLogger options bchan = do

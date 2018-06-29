@@ -2,12 +2,12 @@ module GHCJSDevServer.Watcher
   ( runGHCJSWatcher
   ) where
 
-import           Control.Concurrent      (threadDelay)
-import           Control.Concurrent.STM  (TChan, atomically, writeTChan)
-import           Control.Monad           (forever, void)
-import           GHCJSDevServer.Compiler (runGHCJSCompiler)
-import           GHCJSDevServer.Options  (Options (..), WatcherOptions (..))
-import           System.FSNotify         (Event (..), watchDir, withManager)
+import Control.Concurrent (threadDelay)
+import Control.Concurrent.STM (TChan, atomically, writeTChan)
+import Control.Monad (forever, void)
+import GHCJSDevServer.Compiler (runGHCJSCompiler)
+import GHCJSDevServer.Options (Options(..), WatcherOptions(..))
+import System.FSNotify (Event(..), watchDir, withManager)
 
 runGHCJSWatcher :: TChan (Either String String) -> Options -> IO ()
 runGHCJSWatcher bchan options = do
@@ -24,7 +24,7 @@ runGHCJSWatcher bchan options = do
   where
     shouldRecompile :: Event -> Bool
     shouldRecompile (Modified _ _) = True
-    shouldRecompile _              = False
+    shouldRecompile _ = False
 
 runCompilation :: TChan (Either String String) -> Options -> IO ()
 runCompilation bchan options = do

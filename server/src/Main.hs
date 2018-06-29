@@ -2,13 +2,17 @@ module Main
   ( main
   ) where
 
-import           Control.Concurrent     (forkIO)
-import           Control.Concurrent.STM (atomically, newBroadcastTChan)
-import           Control.Monad          (void)
-import           GHCJSDevServer         (getOptions, runGHCJSLogger,
-                                         runGHCJSNotifier, runGHCJSServer,
-                                         runGHCJSWatcher)
-import           System.IO.Temp         (withTempDirectory)
+import Control.Concurrent (forkIO)
+import Control.Concurrent.STM (atomically, newBroadcastTChan)
+import Control.Monad (void)
+import GHCJSDevServer
+  ( getOptions
+  , runGHCJSLogger
+  , runGHCJSNotifier
+  , runGHCJSServer
+  , runGHCJSWatcher
+  )
+import System.IO.Temp (withTempDirectory)
 
 main :: IO ()
 main =

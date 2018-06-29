@@ -7,9 +7,9 @@ module GHCJSDevServer
   , module GHCJSDevServer.Logger
   ) where
 
-import           GHCJSDevServer.Compiler
-import           GHCJSDevServer.Logger
-import           GHCJSDevServer.Notifier
-import           GHCJSDevServer.Options
-import           GHCJSDevServer.Server
-import           GHCJSDevServer.Watcher
+import GHCJSDevServer.Compiler
+import GHCJSDevServer.Logger
+import GHCJSDevServer.Notifier
+import GHCJSDevServer.Options
+import GHCJSDevServer.Server
+import GHCJSDevServer.Watcher
