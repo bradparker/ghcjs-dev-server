@@ -33,5 +33,6 @@ executable ghcjs-dev-server
     Haskell2010
   default-extensions:
     OverloadedStrings
+    NamedFieldPuns
   ghc-options:
     -Wall
