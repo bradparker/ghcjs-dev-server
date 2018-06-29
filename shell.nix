@@ -1,22 +1,25 @@
-with import <nixpkgs> {};
-{ nixpkgs ? import (fetchgit {
-    inherit (builtins.fromJSON (builtins.readFile ./nixpkgs.json)) url rev sha256;
-  }) {},
-  compiler ? "default" }:
+{ nixpkgs ? import ./nix/nixpkgs.nix {} }:
 let
-  haskellPackages = if compiler == "default"
-    then nixpkgs.haskellPackages
-    else nixpkgs.pkgs.haskell.packages.${compiler};
-  hlint = haskellPackages.hlint;
-  cabal = haskellPackages.cabal-install;
+  packages = nixpkgs.haskell.packages.ghc802;
 
-  default = (import ./default.nix { inherit nixpkgs compiler; });
+  hlint = packages.hlint;
+  hindent = packages.hindent;
+  cabal = packages.cabal-install;
+
+  default = (import ./default.nix { inherit nixpkgs; });
   serverEnvAttrs = default.server.env.drvAttrs;
   clientEnvAttrs = default.client.env.drvAttrs;
 
   merged = serverEnvAttrs // {
     name = "ghcjs-dev-env";
-    nativeBuildInputs = serverEnvAttrs.nativeBuildInputs ++ clientEnvAttrs.nativeBuildInputs;
+    nativeBuildInputs =
+      serverEnvAttrs.nativeBuildInputs ++
+      clientEnvAttrs.nativeBuildInputs ++
+      [
+        cabal
+        hindent
+        hlint
+      ];
     shellHook = serverEnvAttrs.shellHook + clientEnvAttrs.shellHook;
   };
 in
