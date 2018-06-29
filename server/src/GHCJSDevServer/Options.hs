@@ -6,13 +6,28 @@ module GHCJSDevServer.Options
   , getOptions
   ) where
 
-import           Data.Monoid           ((<>))
-import           Options.Applicative   (Parser, auto, customExecParser,
-                                        fullDesc, header, help, helper, info,
-                                        long, metavar, option, prefs, short,
-                                        showHelpOnError, str, value)
-import           System.Directory      (getCurrentDirectory)
-import           System.FilePath.Posix (takeBaseName)
+import Data.Monoid ((<>))
+import Options.Applicative
+  ( Parser
+  , auto
+  , customExecParser
+  , fullDesc
+  , header
+  , help
+  , helper
+  , info
+  , long
+  , metavar
+  , option
+  , prefs
+  , short
+  , showHelpOnError
+  , many
+  , str
+  , value
+  )
+import System.Directory (getCurrentDirectory)
+import System.FilePath.Posix (takeBaseName)
 
 newtype WatcherOptions = WatcherOptions
   { _directory :: String
@@ -27,14 +42,14 @@ newtype NotifierOptions = NotifierOptions
   } deriving (Show)
 
 data Options = Options
-  { _name        :: String
-  , _execName    :: String
-  , _sourceDirs  :: [String]
-  , _buildDir    :: String
+  { _name :: String
+  , _execName :: String
+  , _sourceDirs :: [String]
+  , _buildDir :: String
   , _defaultExts :: [String]
-  , _watcher     :: WatcherOptions
-  , _server      :: ServerOptions
-  , _notifier    :: NotifierOptions
+  , _watcher :: WatcherOptions
+  , _server :: ServerOptions
+  , _notifier :: NotifierOptions
   } deriving (Show)
 
 optionsParser :: String -> String -> Parser Options
@@ -50,22 +65,22 @@ optionsParser defaultName defaultBuildDir =
     (value defaultName <> short 'e' <> long "executable-name" <>
      help "Executable name as it appears in .cabal file" <>
      metavar "EXECUTABLE_NAME") <*>
-  option
-    auto
-    (value ["src"] <> short 's' <> long "source-dirs" <>
-     help "Source directories" <>
-     metavar "SOURCE_DIRECTORIES") <*>
+  many
+    (option
+       str
+       (short 's' <> long "source-dirs" <> help "Source directories" <>
+        metavar "SOURCE_DIRECTORIES")) <*>
   option
     str
     (value defaultBuildDir <> short 'b' <> long "build-dir" <>
      help
        "The build dir, where the work is done and static files are served from" <>
      metavar "BUILD_DIR") <*>
-  option
-    auto
-    (value ["OverloadedStrings"] <> short 'x' <> long "default-extensions" <>
-     help "Default GHC extensions" <>
-     metavar "DEFAULT_EXTENSIONS") <*>
+  many
+    (option
+       str
+       (short 'x' <> long "default-extensions" <> help "Default GHC extensions" <>
+        metavar "DEFAULT_EXTENSIONS")) <*>
   (WatcherOptions <$>
    option
      str
