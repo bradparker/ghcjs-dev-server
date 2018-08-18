@@ -23,7 +23,7 @@ runGHCJSWatcher bchan options = do
        forever (threadDelay maxBound))
   where
     shouldRecompile :: Event -> Bool
-    shouldRecompile (Modified _ _) = True
+    shouldRecompile Modified {} = True
     shouldRecompile _ = False
 
 runCompilation :: TChan (Either String String) -> Options -> IO ()

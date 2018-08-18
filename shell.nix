@@ -1,25 +1,17 @@
-{ nixpkgs ? import ./nix/nixpkgs.nix {} }:
+{ nixpkgs ? import ./nix/packages/nixpkgs {} }:
 let
-  packages = nixpkgs.haskell.packages.ghc802;
-
-  hlint = packages.hlint;
-  hindent = packages.hindent;
-  cabal = packages.cabal-install;
-
   default = (import ./default.nix { inherit nixpkgs; });
   serverEnvAttrs = default.server.env.drvAttrs;
   clientEnvAttrs = default.client.env.drvAttrs;
+
+  tools = import ./nix/tools.nix { compiler = "ghc843"; inherit nixpkgs; };
 
   merged = serverEnvAttrs // {
     name = "ghcjs-dev-env";
     nativeBuildInputs =
       serverEnvAttrs.nativeBuildInputs ++
       clientEnvAttrs.nativeBuildInputs ++
-      [
-        cabal
-        hindent
-        hlint
-      ];
+      tools;
     shellHook = serverEnvAttrs.shellHook + clientEnvAttrs.shellHook;
   };
 in

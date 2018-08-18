@@ -12,7 +12,7 @@ executable ghcjs-dev-server
   main-is:
     Main.hs
   build-depends:
-    base >=4.9 && <4.10,
+    base >=4.9 && <5,
     aeson,
     ansi-terminal,
     bytestring,
@@ -34,5 +34,13 @@ executable ghcjs-dev-server
   default-extensions:
     OverloadedStrings
     NamedFieldPuns
+  other-modules:
+    GHCJSDevServer
+    GHCJSDevServer.Compiler
+    GHCJSDevServer.Logger
+    GHCJSDevServer.Notifier
+    GHCJSDevServer.Options
+    GHCJSDevServer.Server
+    GHCJSDevServer.Watcher
   ghc-options:
     -Wall
