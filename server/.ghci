@@ -1,0 +1,4 @@
+:set -Wall
+:set -XNamedFieldPuns
+:set -XOverloadedStrings
+:set -isrc
