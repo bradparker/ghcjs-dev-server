@@ -10,19 +10,19 @@ import System.FilePath ((</>))
 import System.Process (readProcessWithExitCode)
 
 args :: Options -> [String]
-args Options {_name, _execName, _sourceDirs, _buildDir, _defaultExts} =
-  map ("-i" <>) _sourceDirs ++
-  map ("-X" <>) _defaultExts ++
+args Options {name, execName, sourceDirs, buildDir, defaultExts} =
+  map ("-i" <>) sourceDirs ++
+  map ("-X" <>) defaultExts ++
   [ "-outputdir"
-  , _buildDir </> _name
+  , buildDir </> name
   , "-o"
-  , _buildDir </> _name </> _execName
+  , buildDir </> name </> execName
   , "Main"
   ]
 
 runGHCJSCompiler :: Options -> IO (Either String String)
-runGHCJSCompiler options@Options {_buildDir, _name, _execName} = do
-  createDirectoryIfMissing True (_buildDir </> _name </> _execName)
+runGHCJSCompiler options@Options {buildDir, name, execName} = do
+  createDirectoryIfMissing True (buildDir </> name </> execName)
   (code, out, err) <- readProcessWithExitCode "ghcjs" (args options) ""
   case code of
     ExitSuccess -> return (Right out)

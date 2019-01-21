@@ -1,5 +1,6 @@
 module GHCJSDevServer.Notifier
-  ( runGHCJSNotifier
+  ( notifierMiddleware
+  , notifierApp
   ) where
 
 import Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
@@ -7,15 +8,20 @@ import Control.Monad (forever)
 import Data.Aeson (encode)
 import Data.Bifunctor (bimap)
 import Data.Char (isAscii)
-import GHCJSDevServer.Options (NotifierOptions(..), Options(..))
-import Network.WebSockets (ServerApp, acceptRequest, runServer, sendTextData)
+import Network.Wai (Middleware)
+import Network.Wai.Handler.WebSockets (websocketsOr)
+import Network.WebSockets
+  ( ServerApp
+  , acceptRequest
+  , defaultConnectionOptions
+  , sendTextData
+  )
 
-runGHCJSNotifier :: TChan (Either String String) -> Options -> IO ()
-runGHCJSNotifier bchan options =
-  runServer "0.0.0.0" (_notifierPort (_notifier options)) (app bchan)
+notifierMiddleware :: TChan (Either String String) -> Middleware
+notifierMiddleware = websocketsOr defaultConnectionOptions . notifierApp
 
-app :: TChan (Either String String) -> ServerApp
-app bchan conn = do
+notifierApp :: TChan (Either String String) -> ServerApp
+notifierApp bchan conn = do
   accepted <- acceptRequest conn
   chan <- atomically (dupTChan bchan)
   forever $ do

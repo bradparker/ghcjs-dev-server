@@ -1,6 +1,7 @@
 { mkDerivation, aeson, ansi-terminal, base, bytestring, directory
 , filepath, fsnotify, optparse-applicative, process, stdenv, stm
-, temporary, wai, wai-app-static, warp, websockets
+, temporary, wai, wai-app-static, wai-middleware-static
+, wai-websockets, warp, websockets
 }:
 mkDerivation {
   pname = "ghcjs-dev-server";
@@ -10,8 +11,8 @@ mkDerivation {
   isExecutable = true;
   executableHaskellDepends = [
     aeson ansi-terminal base bytestring directory filepath fsnotify
-    optparse-applicative process stm temporary wai wai-app-static warp
-    websockets
+    optparse-applicative process stm temporary wai wai-app-static
+    wai-middleware-static wai-websockets warp websockets
   ];
   license = stdenv.lib.licenses.bsd3;
 }

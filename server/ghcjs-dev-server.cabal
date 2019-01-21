@@ -19,12 +19,14 @@ executable ghcjs-dev-server
     directory,
     filepath,
     fsnotify,
+    http-types,
     optparse-applicative,
     process,
     stm,
     temporary,
     wai,
-    wai-app-static,
+    wai-middleware-static,
+    wai-websockets,
     warp,
     websockets
   hs-source-dirs:

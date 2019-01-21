@@ -1,8 +1,6 @@
 module GHCJSDevServer.Options
   ( Options(..)
-  , WatcherOptions(..)
   , ServerOptions(..)
-  , NotifierOptions(..)
   , getOptions
   ) where
 
@@ -29,27 +27,17 @@ import Options.Applicative
 import System.Directory (getCurrentDirectory)
 import System.FilePath.Posix (takeBaseName)
 
-newtype WatcherOptions = WatcherOptions
-  { _directory :: String
-  } deriving (Show)
-
 newtype ServerOptions = ServerOptions
-  { _port :: Int
-  } deriving (Show)
-
-newtype NotifierOptions = NotifierOptions
-  { _notifierPort :: Int
+  { port :: Int
   } deriving (Show)
 
 data Options = Options
-  { _name :: String
-  , _execName :: String
-  , _sourceDirs :: [String]
-  , _buildDir :: String
-  , _defaultExts :: [String]
-  , _watcher :: WatcherOptions
-  , _server :: ServerOptions
-  , _notifier :: NotifierOptions
+  { name :: String
+  , execName :: String
+  , sourceDirs :: [String]
+  , buildDir :: String
+  , defaultExts :: [String]
+  , server :: ServerOptions
   } deriving (Show)
 
 optionsParser :: String -> String -> Parser Options
@@ -81,24 +69,12 @@ optionsParser defaultName defaultBuildDir =
        str
        (short 'x' <> long "default-extensions" <> help "Default GHC extensions" <>
         metavar "DEFAULT_EXTENSIONS")) <*>
-  (WatcherOptions <$>
-   option
-     str
-     (value "src" <> short 'w' <> long "watch" <>
-      help "The directory to watch for file changes" <>
-      metavar "WATCH")) <*>
   (ServerOptions <$>
    option
      auto
      (value 8080 <> short 'p' <> long "port" <>
       help "A port for the server to listen on" <>
-      metavar "PORT")) <*>
-  (NotifierOptions <$>
-   option
-     auto
-     (value 8081 <> long "notifier-port" <>
-      help "A port for the websocket server to listen on" <>
-      metavar "NOTIFIER_PORT"))
+      metavar "PORT"))
 
 getOptions :: String -> IO Options
 getOptions defaultBuildDir = do

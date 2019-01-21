@@ -26,7 +26,7 @@ runGHCJSLogger options bchan = do
     putStrLn "GHCJS"
     setSGR [Reset]
     setSGR [SetColor Foreground Dull Blue]
-    putStrLn ("Server listening on: " ++ show (_port (_server options)))
+    putStrLn ("Server listening on: " ++ show (port (server options)))
     setSGR [Reset]
     case message of
       Left err -> do
