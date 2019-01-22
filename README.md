@@ -12,12 +12,11 @@ At the momement it just does a couple of things:
 ```
 $ nix-shell
 $ cd server
-# Or
-$ cd client
 # Dev, dev, dev
-$ exit
-$ cd examples/simple
-$ nix-shell --run ./run
+$ cd ../client
+# Dev, dev, dev
+$ cd ../examples/simple
+$ nix-shell --pure -A env --run ./run
 ```
 
 You should now have the sample app available at http://localhost:8080. If you edit a Haskell file in the `examples/simple/src` directory then the browser should reload with your new code.

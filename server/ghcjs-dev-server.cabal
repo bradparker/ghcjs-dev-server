@@ -1,16 +1,13 @@
+cabal-version:       2.2
 name:                ghcjs-dev-server
 version:             0.1.0.0
-license:             BSD3
+license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Brad Parker
 maintainer:          hi@bradparker.com
 build-type:          Simple
-extra-source-files:  ChangeLog.md
-cabal-version:       >=1.10
 
-executable ghcjs-dev-server
-  main-is:
-    Main.hs
+common deps
   build-depends:
     base >=4.9 && <5,
     aeson,
@@ -29,14 +26,22 @@ executable ghcjs-dev-server
     wai-websockets,
     warp,
     websockets
-  hs-source-dirs:
-    src
+
+common ghc
   default-language:
     Haskell2010
   default-extensions:
     OverloadedStrings
     NamedFieldPuns
-  other-modules:
+  ghc-options:
+    -Wall
+
+library
+  import: deps
+  import: ghc
+  hs-source-dirs:
+    lib
+  exposed-modules:
     GHCJSDevServer
     GHCJSDevServer.Compiler
     GHCJSDevServer.Logger
@@ -44,5 +49,13 @@ executable ghcjs-dev-server
     GHCJSDevServer.Options
     GHCJSDevServer.Server
     GHCJSDevServer.Watcher
-  ghc-options:
-    -Wall
+
+executable ghcjs-dev-server
+  import: deps
+  import: ghc
+  main-is:
+    Main.hs
+  hs-source-dirs:
+    exe
+  build-depends:
+    ghcjs-dev-server

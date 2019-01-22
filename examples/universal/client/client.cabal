@@ -1,0 +1,45 @@
+cabal-version: 2.2
+name: client
+version: 0.1.0.0
+license: BSD-3-Clause
+author: Brad Parker
+maintainer: hi@bradparker.com
+build-type: Simple
+
+common deps
+  build-depends:
+    base >=4.11 && <4.12,
+    common
+
+common ghc
+  default-language:
+    Haskell2010
+
+library
+  import: deps
+  import: ghc
+  hs-source-dirs:
+    lib
+  exposed-modules:
+    Client
+
+executable client
+  import: deps
+  import: ghc
+  main-is:
+    Main.hs
+  hs-source-dirs:
+    exe
+  build-depends:
+    client
+
+executable client-dev
+  import: deps
+  import: ghc
+  main-is:
+    Main.hs
+  hs-source-dirs:
+    dev
+  build-depends:
+    client,
+    ghcjs-dev-client

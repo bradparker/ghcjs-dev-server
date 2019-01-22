@@ -1,7 +1,7 @@
 let
   nixpkgs = import ../../nix/packages/nixpkgs;
-  ghcjs-dev-client = nixpkgs.haskell.packages.ghcjs.callPackage ../../client/package.nix {};
-  ghcjs-dev-server = nixpkgs.haskellPackages.callPackage ../../server/package.nix {};
+  ghcjs-dev-client = nixpkgs.haskell.packages.ghcjs.callCabal2nix "ghcjs-dev-client" ../../client {};
+  ghcjs-dev-server = nixpkgs.haskellPackages.callCabal2nix "ghcjs-dev-server" ../../server {};
   package = nixpkgs.haskell.packages.ghcjs.callCabal2nix "ghcjs-dev-server-examples-simple" ./. {
     inherit ghcjs-dev-client;
   };
