@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-../server/dist/build/ghcjs-dev-server/ghcjs-dev-server -s src -s ../client/src/ -x OverloadedStrings

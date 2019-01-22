@@ -1,0 +1,18 @@
+cabal-version: 2.2
+name: ghcjs-dev-server-examples-simple
+version: 0.1.0.0
+license: BSD-3-Clause
+author: Brad Parker
+maintainer: hi@bradparker.com
+build-type: Simple
+
+executable ghcjs-dev-server-examples-simple
+  main-is:
+    Main.hs
+  build-depends:
+    base >=4.11 && <4.12,
+    ghcjs-dev-client
+  hs-source-dirs:
+    src
+  default-language:
+    Haskell2010
