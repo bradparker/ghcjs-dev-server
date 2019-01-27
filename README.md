@@ -7,6 +7,10 @@ At the momement it just does a couple of things:
 * Recompiles a GHCJS project on source change
 * On recompile sends a websocket message to connected browsers which can be used to reload
 
+Please enjoy this very low quality and hastily made gif of running the [Universal example](examples/universal)
+
+![Working on the Universal Example](docs/example.gif)
+
 ## Development
 
 ```
