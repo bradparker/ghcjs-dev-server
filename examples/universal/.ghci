@@ -1,0 +1,3 @@
+:set -icommon/lib
+:set -iserver/dev
+:set -iserver/lib

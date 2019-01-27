@@ -9,7 +9,11 @@ build-type: Simple
 common deps
   build-depends:
     base >=4.11 && <4.12,
-    common
+    bytestring,
+    common,
+    http-types,
+    wai,
+    warp
 
 common ghc
   default-language:

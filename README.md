@@ -16,7 +16,7 @@ $ cd server
 $ cd ../client
 # Dev, dev, dev
 $ cd ../examples/simple
-$ nix-shell --pure -A env --run ./run
+$ nix-shell --pure -A env --run "ghcjs-dev-server -s src"
 ```
 
 You should now have the sample app available at http://localhost:8080. If you edit a Haskell file in the `examples/simple/src` directory then the browser should reload with your new code.

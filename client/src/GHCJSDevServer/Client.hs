@@ -1,7 +1,10 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module GHCJSDevServer.Client
   ( runGHCJSDevServerClient
   ) where
 
+import Control.Exception (IOException, catch)
 import Control.Monad (join, void)
 import Data.Aeson (eitherDecode)
 import Data.ByteString.Lazy (ByteString)
@@ -15,6 +18,7 @@ import JavaScript.Web.CloseEvent (CloseEvent)
 import JavaScript.Web.Location (getWindowLocation, reload)
 import JavaScript.Web.MessageEvent (MessageEvent, MessageEventData(..), getData)
 import JavaScript.Web.WebSocket (WebSocket, WebSocketRequest(..), connect)
+import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 
 newtype HTMLElement =
   HTMLElement JSVal
@@ -56,23 +60,33 @@ handleMessage event =
         Left err -> do
           putGHCJSDS ("ERROR:\n" ++ tail err)
           body <- setInnerHTML "" =<< getBody
-          void (appendChild body =<< errorReport (tail err))
+          void $ appendChild body =<< errorReport (tail err)
         Right report -> do
           putGHCJSDS ("SUCCESS:\n" ++ report)
           reload True =<< getWindowLocation
     _ -> putGHCJSDS "UNKOWN MESSAGE FORMAT"
 
-handleClose :: CloseEvent -> IO ()
-handleClose _ = putGHCJSDS "Disconnected"
+reconnect :: Int -> IO ()
+reconnect port = do
+  putGHCJSDS "Attempting to reconnect"
+  runGHCJSDevServerClient port `catch` \(e :: IOException) -> do
+    putGHCJSDS $ "An exception was raised trying to connect: " <> show e
+    reconnect port
+
+handleClose :: Int -> CloseEvent -> IO ()
+handleClose port _ = do
+  putGHCJSDS "Disconnected"
+  reconnect port
 
 runGHCJSDevServerClient :: Int -> IO ()
 runGHCJSDevServerClient port = do
-  socket <-
+  hSetBuffering stdout LineBuffering
+  void $
     connect
       WebSocketRequest
         { url = "ws://localhost:" <> JSString.pack (show port)
         , protocols = []
-        , onClose = Just handleClose
+        , onClose = Just $ handleClose port
         , onMessage = Just handleMessage
         }
   putGHCJSDS "Waiting for changes ..."

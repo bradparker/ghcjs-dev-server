@@ -3,34 +3,34 @@ module Main
   ) where
 
 import Control.Concurrent (forkIO)
-import Control.Concurrent.STM (atomically, newBroadcastTChan)
-import Control.Monad (void)
-import GHCJSDevServer
-  ( Options(..)
-  , ServerOptions(..)
-  , getOptions
-  , middleware
-  , runGHCJSLogger
-  , runGHCJSWatcher
-  )
+import Control.Concurrent.STM (TChan, atomically, dupTChan, readTChan)
+import Control.Monad (forever)
+import Data.Functor (void)
+import qualified GHCJSDevServer
 import Network.HTTP.Types (status200)
 import Network.Wai (Application, responseFile)
-import Network.Wai.Handler.Warp (run)
-import System.FilePath ((<.>), (</>))
+import qualified Network.Wai.Handler.Warp as Warp
+import System.FilePath ((</>))
 import System.IO.Temp (withTempDirectory)
 
-app :: Options -> Application
-app Options { buildDir, name, execName } _req respond = respond $ responseFile
-  status200
-  []
-  (buildDir </> name </> execName <.> "jsexe" </> "index.html")
-  Nothing
+makeApp :: String -> Application
+makeApp outputDir _req respond =
+  respond $ responseFile status200 [] (outputDir </> "index.html") Nothing
+
+serverLogger :: Int -> TChan (Either String String) -> IO ()
+serverLogger port bchan = do
+ chan <- atomically $ dupTChan bchan
+ forever $ do
+   message <- atomically $ readTChan chan
+   GHCJSDevServer.logger port message
 
 main :: IO ()
 main =
   withTempDirectory "." "ghcjsds-build" $ \tempDir -> do
-    options <- getOptions tempDir
-    chan <- atomically newBroadcastTChan
-    void $ forkIO $ runGHCJSWatcher chan options
-    void $ forkIO $ run (port (server options)) $ middleware options chan (app options)
-    runGHCJSLogger options chan
+    serverOptions <- GHCJSDevServer.getOptions tempDir
+    let options = GHCJSDevServer.options serverOptions
+    let port = GHCJSDevServer.port serverOptions
+    (chan, middleware) <- GHCJSDevServer.makeMiddleware options
+    let app = middleware $ makeApp $ GHCJSDevServer.outputDirectory options
+    void $ forkIO $ Warp.run port app
+    serverLogger port chan

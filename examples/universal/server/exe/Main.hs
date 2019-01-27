@@ -3,6 +3,7 @@ module Main
   ) where
 
 import qualified Server
+import qualified Network.Wai.Handler.Warp as Warp
 
 main :: IO ()
-main = Server.main
+main = Warp.run 8080 Server.app

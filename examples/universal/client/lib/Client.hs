@@ -2,5 +2,7 @@ module Client
   ( main
   ) where
 
+import Common (who)
+
 main :: IO ()
-main = putStrLn "Hello, haskell!"
+main = putStrLn $ "Hello, " <> who <> "!"

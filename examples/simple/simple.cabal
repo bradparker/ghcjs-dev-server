@@ -1,12 +1,12 @@
 cabal-version: 2.2
-name: ghcjs-dev-server-examples-simple
+name: simple
 version: 0.1.0.0
 license: BSD-3-Clause
 author: Brad Parker
 maintainer: hi@bradparker.com
 build-type: Simple
 
-executable ghcjs-dev-server-examples-simple
+executable simple
   main-is:
     Main.hs
   build-depends:

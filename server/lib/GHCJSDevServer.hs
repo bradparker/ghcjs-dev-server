@@ -5,8 +5,9 @@ module GHCJSDevServer
   , module GHCJSDevServer.Compiler
   , module GHCJSDevServer.Notifier
   , module GHCJSDevServer.Logger
+  , makeMiddleware
   , middleware
-  , runWith
+  , outputDirectory
   ) where
 
 import GHCJSDevServer.Compiler
@@ -18,16 +19,25 @@ import GHCJSDevServer.Watcher
 
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM (TChan, atomically, newBroadcastTChan)
-import Control.Monad (void)
-import Network.Wai (Application, Middleware)
-import Network.Wai.Handler.Warp (run)
+import Data.Functor (void)
+import Network.Wai (Middleware)
+import System.FilePath ((<.>), (</>))
 
-middleware :: Options -> TChan (Either String String) -> Middleware
+middleware
+  :: Options
+  -> TChan (Either String String)
+  -> Middleware
 middleware options chan =
   notifierMiddleware chan . serverMiddleware options
 
-runWith :: Options -> Application -> IO ()
-runWith options app = do
+makeMiddleware
+  :: Options
+  -> IO (TChan (Either String String), Middleware)
+makeMiddleware opts = do
   chan <- atomically newBroadcastTChan
-  void $ forkIO $ runGHCJSWatcher chan options
-  run (port (server options)) $ middleware options chan app
+  void $ forkIO $ runGHCJSWatcher chan opts
+  pure (chan, middleware opts chan)
+
+outputDirectory :: Options -> String
+outputDirectory Options {buildDir, name, execName} =
+  buildDir </> name </> execName <.> "jsexe"
