@@ -2,9 +2,22 @@ module Main
   ( main
   ) where
 
-import Data.Monoid ((<>))
+import Control.Monad (void)
+import GHCJS.DOM (currentDocumentUnchecked)
+import GHCJS.DOM.JSFFI.Generated.Document (createElement, getBodyUnchecked)
+import GHCJS.DOM.JSFFI.Generated.Element (setInnerHTML)
+import GHCJS.DOM.JSFFI.Generated.Node (appendChild)
 import GHCJSDevServer.Client (runGHCJSDevServerClient)
-import SomeModule (who)
+
+app :: IO ()
+app = do
+  doc <- currentDocumentUnchecked
+  elem <- createElement doc "div"
+  setInnerHTML elem "Hello, GHCJS!!!"
+  body <- getBodyUnchecked doc
+  void $ appendChild body elem
 
 main :: IO ()
-main = runGHCJSDevServerClient 8080 *> putStrLn ("Hello, " <> who <> "!")
+main = do
+  runGHCJSDevServerClient 8080
+  app

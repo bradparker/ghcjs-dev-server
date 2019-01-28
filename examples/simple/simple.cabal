@@ -11,7 +11,8 @@ executable simple
     Main.hs
   build-depends:
     base >=4.11 && <4.12,
-    ghcjs-dev-client
+    ghcjs-dev-client,
+    ghcjs-dom
   hs-source-dirs:
     src
   default-language:
